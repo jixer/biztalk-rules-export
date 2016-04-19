@@ -33,14 +33,14 @@ namespace BizTalkRulesUtility
         {
             // RuleSetDeploymentDriver has the following important methods            
             Microsoft.BizTalk.RuleEngineExtensions.RuleSetDeploymentDriver dd = new Microsoft.BizTalk.RuleEngineExtensions.RuleSetDeploymentDriver();
-
+           
             // SqlRuleStore - gives access t0 the rule engine database
             SqlRuleStore sqlRuleStore = (SqlRuleStore)dd.GetRuleStore();
 
             // Establish the export file
             FileRuleStore fileRuleStore = new FileRuleStore(policyExportPath);
 
-            CopyPolicies(fileRuleStore, sqlRuleStore);
+            CopyPolicies(fileRuleStore, sqlRuleStore, dd);
         }
 
         private static void ExportPolicies()
@@ -54,16 +54,76 @@ namespace BizTalkRulesUtility
             // Establish the export file
             FileRuleStore fileRuleStore = new FileRuleStore(policyExportPath);
 
-            CopyPolicies(sqlRuleStore, fileRuleStore);
+            CopyPolicies(sqlRuleStore, fileRuleStore, dd);
         }
 
+        //Importing policies
+        private static void CopyPolicies(RuleStore sourceRuleStore, RuleStore targetRuleStore, Microsoft.BizTalk.RuleEngineExtensions.RuleSetDeploymentDriver dd)
+        {
+            RuleSetInfoCollection sourceRulesetInfoList = sourceRuleStore.GetRuleSets(RuleStore.Filter.All);
+            RuleSetInfoCollection targetRulesetInfoList = targetRuleStore.GetRuleSets(RuleStore.Filter.All);
+
+            foreach (RuleSetInfo targetItem in targetRulesetInfoList)
+            {
+                if (targetItem.Published) { 
+                
+                } 
+
+                
+            }
+   
+            foreach (RuleSetInfo item in sourceRulesetInfoList)
+            {
+                RuleSet policy = sourceRuleStore.GetRuleSet(item);
+
+                RuleSet targetPolicy = targetRuleStore.GetRuleSet(item);
+
+
+                try
+                {
+                    System.Console.Out.WriteLine("Importing Policy ({0}) .." , policy.Name);
+                    targetRuleStore.Add(policy);
+                }
+                catch (Microsoft.RuleEngine.RuleStoreRuleSetAlreadyPublishedException e)
+                {
+                    System.Console.Out.WriteLine("Importing Policy ({0}) : (RuleStoreRuleSetAlreadyPublishedException) Undeploying RulesetInfo {1}", policy.Name, item.Name);
+                    //dd.Undeploy(item);
+                    //System.Console.Out.WriteLine("Importing Policy ({0}) : (RuleStoreRuleSetAlreadyPublishedException) Successfully undeployed RulesetInfo {1}, next remove policy ", policy.Name, item.Name);
+                    bool toDeploy = false;
+                    try
+                    {
+                        targetRuleStore.Remove(policy);
+                    }
+                    catch (Microsoft.RuleEngine.RuleStoreRuleSetDeployedException ex) {
+                        dd.Undeploy(item);
+                        targetRuleStore.Remove(policy);
+                        toDeploy = true;
+                    }
+                    targetRuleStore.Add(policy);
+                    targetRuleStore.Publish(policy);
+                    if (toDeploy) {
+                        dd.Deploy(item);
+                        toDeploy = false;
+                    }
+                }
+                catch (Microsoft.RuleEngine.RuleStoreRuleSetDeployedException e) {
+                    System.Console.Out.WriteLine("Importing Policy ({0}) : (RuleStoreRuleSetDeployedException) Undeploying RulesetInfor {1}", policy.Name, item.Name);
+                    dd.Undeploy(item); 
+                    targetRuleStore.Remove(policy);
+                    targetRuleStore.Add(policy);
+                    dd.Deploy(item);
+                }
+            }
+        }
+
+        // for export 
         private static void CopyPolicies(RuleStore sourceRuleStore, RuleStore targetRuleStore)
         {
             RuleSetInfoCollection rulesetInfoList = sourceRuleStore.GetRuleSets(RuleStore.Filter.All);
             foreach (RuleSetInfo item in rulesetInfoList)
             {
                 RuleSet policy = sourceRuleStore.GetRuleSet(item);
-                targetRuleStore.Add(policy);
+                    targetRuleStore.Add(policy);
             }
         }
 
@@ -78,7 +138,7 @@ namespace BizTalkRulesUtility
             // Establish the export file
             FileRuleStore fileRuleStore = new FileRuleStore(vocabExportPath);
 
-            CopyVocabularies(fileRuleStore, sqlRuleStore);
+            CopyVocabularies(fileRuleStore, sqlRuleStore,dd);
         }
 
         public static void ExportVocabularies()
@@ -95,6 +155,7 @@ namespace BizTalkRulesUtility
             CopyVocabularies(sqlRuleStore, fileRuleStore);            
         }
 
+        // for export
         private static void CopyVocabularies(RuleStore sourceRuleStore, RuleStore targetRuleStore)
         {
             VocabularyInfoCollection vocabInfoList = sourceRuleStore.GetVocabularies(RuleStore.Filter.All);
@@ -105,7 +166,32 @@ namespace BizTalkRulesUtility
                 string[] excludedVocabularyNames = { "Predicates", "Common Values", "Common Sets", "Functions" };
                 if (!excludedVocabularyNames.Contains(vocabItem.Name))
                 {
-                    targetRuleStore.Add(vocabItem);
+                        targetRuleStore.Add(vocabItem);
+                }
+            }
+        }
+
+        // for import 
+        private static void CopyVocabularies(RuleStore sourceRuleStore, RuleStore targetRuleStore, Microsoft.BizTalk.RuleEngineExtensions.RuleSetDeploymentDriver dd)
+        {
+            VocabularyInfoCollection vocabInfoList = sourceRuleStore.GetVocabularies(RuleStore.Filter.All);
+            foreach (VocabularyInfo vocabInfoItem in vocabInfoList)
+            {
+                Vocabulary vocabItem = sourceRuleStore.GetVocabulary(vocabInfoItem);
+
+                string[] excludedVocabularyNames = { "Predicates", "Common Values", "Common Sets", "Functions" };
+                if (!excludedVocabularyNames.Contains(vocabItem.Name))
+                {
+                    try
+                    {
+                        targetRuleStore.Add(vocabItem);
+                    }
+                    catch (Exception e)
+                    {
+                        //targetRuleStore.Remove(vocabItem); 
+                        //targetRuleStore.Add(vocabItem);
+                        //targetRuleStore.Publish(vocabItem);
+                    }
                 }
             }
         }
