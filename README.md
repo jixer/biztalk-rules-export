@@ -1,4 +1,4 @@
-# Biztalk Rules Engine Mass Import / Export Tool
+# BizTalk Rules Engine Mass Import / Export Tool
 Details regarding this tool can within the following blog post: 
 http://www.bloggedbychris.com/2015/09/15/biztalk-rules-engine-bre-mass-export-import-tool/#comment-750836
 
