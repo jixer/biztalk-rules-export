@@ -1,7 +1,0 @@
-C:\data\biztalk-rules-export-master\SOURCE\MAIN\BizTalkRulesUtility\bin\Debug\BizTalkRulesUtility.exe.config
-C:\data\biztalk-rules-export-master\SOURCE\MAIN\BizTalkRulesUtility\bin\Debug\BizTalkRulesUtility.exe
-C:\data\biztalk-rules-export-master\SOURCE\MAIN\BizTalkRulesUtility\bin\Debug\BizTalkRulesUtility.pdb
-C:\data\biztalk-rules-export-master\SOURCE\MAIN\BizTalkRulesUtility\bin\Debug\Microsoft.BizTalk.RulesEngineExtensions.dll
-C:\data\biztalk-rules-export-master\SOURCE\MAIN\BizTalkRulesUtility\bin\Debug\Microsoft.RuleEngine.dll
-C:\data\biztalk-rules-export-master\SOURCE\MAIN\BizTalkRulesUtility\obj\x86\Debug\BizTalkRulesUtility.exe
-C:\data\biztalk-rules-export-master\SOURCE\MAIN\BizTalkRulesUtility\obj\x86\Debug\BizTalkRulesUtility.pdb
